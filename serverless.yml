@@ -1,0 +1,37 @@
+service: rr-categories-api
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+
+functions:
+  createCategory:
+    handler: handlers/create.create
+    events:
+      - http:
+          path: categories
+          method: post
+  listCategories:
+    handler: handlers/list.list
+    events:
+      - http:
+          path: categories
+          method: get
+  getCategory:
+    handler: handlers/get.get
+    events:
+      - http:
+          path: categories/{id}
+          method: get
+  updateCategory:
+    handler: handlers/update.update
+    events:
+      - http:
+          path: categories/{id}
+          method: put
+  deleteCategory:
+    handler: handlers/delete.delete
+    events:
+      - http:
+          path: categories/{id}
+          method: delete

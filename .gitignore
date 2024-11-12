@@ -1,0 +1,52 @@
+# dependencies
+**/node_modules/
+
+# testing
+**/.test_report/
+**/.coverage/
+**/.code_quality/
+**/.gitlab-ci-local/
+
+# production
+**/build/
+**/dist/
+**/.serverless/
+**/.webpack/
+runtime-config.js
+
+# misc
+**/.env
+**/.env.*
+.env
+.env.*
+!.env.example
+.DS_Store
+
+# logs
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Yarn offline-mirror
+.yarn-cache/
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
+# Project
+backup/
+keys/
+certs/
+
+# Ignore database data files
+db-data
+
+# Ignore gitlab runner build (dev)
+runner-build
