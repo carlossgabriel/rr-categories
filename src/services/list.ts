@@ -36,7 +36,6 @@ export const listCategory = async ({
 
   try {
     const result = await mongodb.findMany<Category>('categories', filterQuery);
-
     if (!result) {
       console.debug('No categories found');
       return [];
@@ -44,7 +43,10 @@ export const listCategory = async ({
 
     return result;
   } catch (error) {
-    console.error('Error fetching categories:', error);
-    throw new Error('Error fetching categories');
+    if (error instanceof Error) {
+      throw new Error(`Error fetching categories: ${error.message}`);
+    } else {
+      throw new Error(`An unknown error occurred`);
+    }
   }
 };

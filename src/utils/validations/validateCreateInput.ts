@@ -10,9 +10,6 @@ export function validateCategoryCreationInput(requestBody: any):
     }
   | { error: string } {
   const { name, parentId, isRoot } = requestBody;
-  if (!name) {
-    return { error: 'Validation error: name is required' };
-  }
 
   const category: Omit<
     Category,
@@ -35,6 +32,12 @@ export function validateCategoryCreationInput(requestBody: any):
   if (!isRoot && !category.parentId) {
     return {
       error: 'Validation error: parentId is required for non-root categories',
+    };
+  }
+
+  if (isRoot && category.parentId) {
+    return {
+      error: 'Validation error: cannot set parentId on root category',
     };
   }
 

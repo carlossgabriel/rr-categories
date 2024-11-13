@@ -3,35 +3,106 @@ service: rr-categories-api
 provider:
   name: aws
   runtime: nodejs18.x
+  region: us-east-1
+  environment:
+    CATEGORIES_TABLE_NAME: categories
+  apiGateway:
+    minimumCompressionSize: 1024
+    resourcePolicy:
+      throttleSettings:
+        burstLimit: 200
+        rateLimit: 100
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - secretsmanager:GetSecretValue
+      Resource: 'arn:aws:secretsmanager:${opt:region, self:provider.region}:*:secret:/MONGO_URI_SECRET*'
+
+plugins:
+  - serverless-webpack
+  - serverless-localstack
+
+custom:
+  webpack:
+    webpackConfig: ./webpack.config.js
+    packager: yarn
+    includeModules: true
+    keepOutputDirectory: true
+  localstack:
+    stages:
+      - local
+      - dev
+    host: http://localhost
+    endpoints:
+      secretsmanager: http://localhost:4566
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - secretsmanager:GetSecretValue
+        Resource: '*'
 
 functions:
   createCategory:
-    handler: handlers/create.create
+    handler: src/handlers/index.create
+    timeout: 30
     events:
       - http:
           path: categories
           method: post
+          authorizer:
+            type: jwt
+            identitySource: '$request.header.Authorization'
+            issuerUrl: 'https://YOUR_ISSUER_URL'
+            audience: 'YOUR_API_AUDIENCE'
+
   listCategories:
-    handler: handlers/list.list
+    handler: src/handlers/index.list
+    timeout: 30
     events:
       - http:
           path: categories
           method: get
+          authorizer:
+            type: jwt
+            identitySource: '$request.header.Authorization'
+            issuerUrl: 'https://YOUR_ISSUER_URL'
+            audience: 'YOUR_API_AUDIENCE'
+
   getCategory:
-    handler: handlers/get.get
+    handler: src/handlers/index.get
+    timeout: 30
     events:
       - http:
           path: categories/{id}
           method: get
+          authorizer:
+            type: jwt
+            identitySource: '$request.header.Authorization'
+            issuerUrl: 'https://YOUR_ISSUER_URL'
+            audience: 'YOUR_API_AUDIENCE'
+
   updateCategory:
-    handler: handlers/update.update
+    handler: src/handlers/index.update
+    timeout: 30
     events:
       - http:
           path: categories/{id}
           method: put
-  deleteCategory:
-    handler: handlers/delete.delete
+          authorizer:
+            type: jwt
+            identitySource: '$request.header.Authorization'
+            issuerUrl: 'https://YOUR_ISSUER_URL'
+            audience: 'YOUR_API_AUDIENCE'
+
+  removeCategory:
+    handler: src/handlers/index.remove
+    timeout: 30
     events:
       - http:
           path: categories/{id}
           method: delete
+          authorizer:
+            type: jwt
+            identitySource: '$request.header.Authorization'
+            issuerUrl: 'https://YOUR_ISSUER_URL'
+            audience: 'YOUR_API_AUDIENCE'

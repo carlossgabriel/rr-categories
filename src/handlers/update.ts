@@ -2,6 +2,7 @@ import { updateCategory } from '@services/update';
 import { validateCategoryUpdateInput } from '@utils/validations/validateUpdateInput';
 import { APIGatewayProxyHandler } from 'aws-lambda';
 import formatJSONResponse from '@libs/apiGateway';
+import mongodb from '@libs/mongodb';
 
 export const update: APIGatewayProxyHandler = async (event) => {
   try {
@@ -38,9 +39,12 @@ export const update: APIGatewayProxyHandler = async (event) => {
     });
 
     console.log('Updated category:', updatedCategory);
+    mongodb.closeConnection();
 
     return formatJSONResponse(200, { updatedCategory });
   } catch (error) {
+    mongodb.closeConnection();
+
     console.error('Internal Server Error:', error);
     return {
       statusCode: 500,

@@ -2,6 +2,7 @@ import { listCategory } from '@services/list';
 import { validateCategoryListInput } from '@utils/validations/validateListInput';
 import { APIGatewayProxyHandler } from 'aws-lambda';
 import formatJSONResponse from '@libs/apiGateway';
+import mongodb from '@libs/mongodb';
 
 export const list: APIGatewayProxyHandler = async (event) => {
   try {
@@ -22,10 +23,14 @@ export const list: APIGatewayProxyHandler = async (event) => {
     const categories = await listCategory({
       filters: validationResult.filters,
     });
+    mongodb.closeConnection();
+
     console.log('Categories found:', categories);
 
     return formatJSONResponse(200, { categories });
   } catch (error) {
+    mongodb.closeConnection();
+
     console.error('Internal Server Error:', error);
     return {
       statusCode: 500,

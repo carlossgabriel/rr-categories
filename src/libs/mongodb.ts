@@ -1,22 +1,40 @@
+import config from '@utils/config';
 import {
-  MongoClient,
-  Db,
-  InsertOneResult,
-  InsertManyResult,
-  WithId,
   Collection,
+  Db,
+  DeleteResult,
   Document,
-  OptionalId,
-  OptionalUnlessRequiredId,
   Filter,
+  InsertManyResult,
+  InsertOneResult,
+  MongoClient,
+  OptionalUnlessRequiredId,
   UpdateFilter,
   UpdateResult,
-  DeleteResult,
+  WithId,
 } from 'mongodb';
-import config from '@utils/config';
+import { SecretsManager } from './secrets';
 
-const url = config.MONGODB_URL;
 const dbName = config.MONGODB_NAME;
+
+const getMongoUri = async (): Promise<string | undefined> => {
+  if (config.environment === 'development') return;
+  try {
+    console.log('AS:DLKJASD:', config.MONGO_URI_SECRET_NAME);
+    const secret = await SecretsManager.getSecretValue({
+      SecretId: config.MONGO_URI_SECRET_NAME,
+    });
+
+    if (secret && secret.SecretString) {
+      const secretValue = JSON.parse(secret.SecretString);
+      return secretValue.MONGO_URI;
+    }
+    throw new Error('Secret value not found');
+  } catch (err) {
+    console.error('Failed to retrieve secret', err);
+    throw err;
+  }
+};
 
 class MongoDB {
   private static instance: MongoDB;
@@ -37,7 +55,8 @@ class MongoDB {
       return this.db;
     }
     try {
-      this.client = await MongoClient.connect(url);
+      const uri = await getMongoUri();
+      this.client = await MongoClient.connect(uri || config.MONGODB_URL);
       this.db = this.client.db(dbName);
       console.debug('Connected to MongoDB');
       return this.db;
@@ -101,6 +120,10 @@ class MongoDB {
   ): Promise<InsertManyResult<T>> {
     if (!this.db) await this.connect();
     try {
+      if (!this.collectionExists(collectionName)) {
+        console.info(`Creating collection "${collectionName}"`);
+        await this.createCollection(collectionName);
+      }
       const result = await this.db!.collection<T>(collectionName).insertMany(
         documents,
       );

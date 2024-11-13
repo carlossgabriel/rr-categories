@@ -2,6 +2,7 @@ import { getCategory } from '@services/get';
 import { APIGatewayProxyHandler } from 'aws-lambda';
 import { validateCategoryGetInput } from '../utils/validations/validateGetInput';
 import formatJSONResponse from '@libs/apiGateway';
+import mongodb from '@libs/mongodb';
 
 export const get: APIGatewayProxyHandler = async (event) => {
   try {
@@ -22,6 +23,8 @@ export const get: APIGatewayProxyHandler = async (event) => {
       validationResult.attribute as 'id' | 'name',
       validationResult.value,
     );
+    mongodb.closeConnection();
+
     console.log('Category found:', category);
     if (!category) {
       console.log('Category not found');
@@ -33,6 +36,8 @@ export const get: APIGatewayProxyHandler = async (event) => {
 
     return formatJSONResponse(200, { category });
   } catch (error) {
+    mongodb.closeConnection();
+
     console.error('Internal Server Error:', error);
     return {
       statusCode: 500,

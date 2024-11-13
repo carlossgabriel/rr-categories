@@ -2,6 +2,7 @@ import { removeCategory } from '@services/remove';
 import { validateCategoryDeleteInput } from '@utils/validations/validateDeleteInput';
 import { APIGatewayProxyHandler } from 'aws-lambda';
 import formatJSONResponse from '@libs/apiGateway';
+import mongodb from '@libs/mongodb';
 
 export const remove: APIGatewayProxyHandler = async (event) => {
   try {
@@ -18,13 +19,24 @@ export const remove: APIGatewayProxyHandler = async (event) => {
     }
 
     console.log('Deleting category:', validationResult.categoryId);
-    await removeCategory(validationResult.categoryId);
-    console.log('Category deleted successfully');
+    const result = await removeCategory(validationResult.categoryId);
+    mongodb.closeConnection();
 
+    if (!result) {
+      console.log('Category not found');
+
+      return formatJSONResponse(404, {
+        message: 'Category not found',
+      });
+    }
+
+    console.log('Category deleted successfully');
     return formatJSONResponse(200, {
       message: 'Category deleted successfully',
     });
   } catch (error) {
+    mongodb.closeConnection();
+
     console.error('Internal Server Error:', error);
     return {
       statusCode: 500,

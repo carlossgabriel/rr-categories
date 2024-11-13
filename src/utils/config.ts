@@ -6,10 +6,10 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-if (!process.env.JWT_SECRET) {
-  console.error('JWT_SECRET must be defined');
-  process.exit(1);
-}
+// if (!process.env.JWT_SECRET) {
+//   console.error('JWT_SECRET must be defined');
+//   process.exit(1);
+// }
 
 if (!process.env.NODE_ENV) {
   console.error('NODE_ENV must be defined');
@@ -36,6 +36,9 @@ const config = {
 
   // JWT CONFIG
   jwtSecret: process.env.JWT_SECRET,
+
+  MONGO_URI_SECRET_NAME:
+    process.env.MONGO_URI_SECRET_NAME || 'MONGO_URI_SECRET',
 
   MONGODB_URL:
     process.env.MONGODB_URL ||

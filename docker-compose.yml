@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: bitnami/mongodb
+    ports:
+      - '27017:27017'
+    environment:
+      MONGODB_USERNAME: root
+      MONGODB_PASSWORD: semsenha
+      MONGODB_DATABASE: mongo_database
+      MONGODB_ROOT_USER: root
+      MONGODB_ROOT_PASSWORD: semsenha
+    volumes:
+      - ./mongodb_data:/data/db
+
+  localstack:
+    image: localstack/localstack:2.2
+    ports:
+      - '127.0.0.1:4566:4566'
+    environment:
+      - DEBUG=${DEBUG-1}
+      - SERVICES=${SERVICES-}
+      - PERSISTENCE=${PERSISTENCE-}
+      - DATA_DIR=/tmp/localstack/data
+      - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR-docker-reuse}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - PROVIDER_OVERRIDE_LAMBDA=asf
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - '${TMPDIR:-/tmp/localstack}:/var/lib/localstack'
+    extra_hosts:
+      # Add support to container to access local host
+      #   -> use 'host.docker.internal' as localhost DNS name
+      - 'host.docker.internal:host-gateway'

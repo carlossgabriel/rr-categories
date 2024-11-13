@@ -4,30 +4,32 @@ import mongodb from '@libs/mongodb';
 
 export const getCategory = async (attribute: 'id' | 'name', value: string) => {
   const collectionName = config.COLLECTION_NAME;
-  console.log(`Starting getCategory function`);
-  console.log(`Parameters - attribute: ${attribute}, value: ${value}`);
-
   console.debug(
     `Getting category by ${attribute} "${value}" from table "${collectionName}"`,
   );
 
-  const result = await mongodb.find<Category>({
-    collectionName,
-    filter: {
-      [attribute]: value,
-    },
-  });
+  try {
+    const result = await mongodb.find<Category>({
+      collectionName,
+      filter: {
+        [attribute]: value,
+      },
+    });
+    mongodb.closeConnection();
 
-  console.log(`Database query result: ${JSON.stringify(result)}`);
+    console.debug(`Database query result: ${JSON.stringify(result)}`);
 
-  if (!result) {
-    console.debug(`Category not found by ${attribute} "${value}"`);
-    console.log(`Exiting getCategory function with result: null`);
-    return null;
+    if (!result) {
+      console.debug(`Category not found by ${attribute} "${value}"`);
+      return null;
+    }
+
+    return result;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Error fetching category: ${error.message}`);
+    } else {
+      throw new Error(`An unknown error occurred`);
+    }
   }
-
-  console.log(
-    `Exiting getCategory function with result: ${JSON.stringify(result)}`,
-  );
-  return result;
 };

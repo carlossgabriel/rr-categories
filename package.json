@@ -9,7 +9,10 @@
     "lint": "eslint . --ext .ts",
     "format": "prettier --write .",
     "test": "jest --detectOpenHandles",
-    "prepare": "husky"
+    "prepare": "husky",
+    "remove:local": "serverless remove --stage dev",
+    "deploy:local": "cross-env MONGO_URI=mongodb://localhost:27017/mongo_database serverless deploy --config serverless-dev.yml --stage dev",
+    "infra:up": "docker compose up -d && yarn deploy:local"
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.238.0",
@@ -30,9 +33,11 @@
     "pg": "^8.13.1",
     "pg-sql2": "^4.13.0",
     "source-map-support": "^0.5.21",
-    "uuid": "^8.3.2"
+    "uuid": "^11.0.3"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
     "@serverless/typescript": "^2.23.0",
     "@types/aws-lambda": "^8.10.101",
     "@types/jest": "^29.5.0",
@@ -41,7 +46,10 @@
     "@types/pg": "^8.11.10",
     "@typescript-eslint/eslint-plugin": "^8.13.0",
     "@typescript-eslint/parser": "^8.13.0",
+    "commitizen": "^4.3.1",
     "copy-webpack-plugin": "^11.0.0",
+    "cross-env": "^7.0.3",
+    "cz-conventional-changelog": "^3.3.0",
     "eslint": "^8.16.0",
     "eslint-plugin-import": "^2.26.0",
     "husky": "^9.1.6",
@@ -54,7 +62,6 @@
     "serverless-iam-roles-per-function": "^3.2.0",
     "serverless-localstack": "^1.0.0",
     "serverless-offline": "^7.0.0",
-    "serverless-prune-plugin": "^2.0.1",
     "serverless-webpack": "^5.8.5",
     "ts-jest": "^29.1.0",
     "ts-loader": "^9.3.1",
@@ -62,6 +69,12 @@
     "tsconfig-paths": "^3.9.0",
     "typescript": "^5.0.4",
     "webpack": "^5.74.0",
+    "webpack-cli": "^5.1.4",
     "webpack-node-externals": "^3.0.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }

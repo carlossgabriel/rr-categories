@@ -1,7 +1,8 @@
 import Joi from 'joi';
+import { UUIDTypes } from 'uuid';
 
 export interface Category {
-  id: string;
+  id: UUIDTypes;
 
   name: string;
 
@@ -13,8 +14,7 @@ export interface Category {
 
   parentId: Category['id'];
 
-  // GSI
-  pathCategory?: string;
+  pathCategory: string;
 
   children: Category['id'][];
 
@@ -28,7 +28,7 @@ export interface Category {
 }
 
 export const categorySchema = Joi.object<Category>({
-  id: Joi.string(),
+  id: Joi.string().uuid(),
 
   name: Joi.string().min(3).max(100).required(),
 
@@ -40,9 +40,9 @@ export const categorySchema = Joi.object<Category>({
 
   depth: Joi.number().integer().min(0).max(5),
 
-  parentId: Joi.string().uuid().required(),
+  parentId: Joi.string().uuid().allow(null),
 
-  children: Joi.array().items(Joi.string().uuid()).max(20),
+  children: Joi.array().items(Joi.string()).max(20),
 
   createdAt: Joi.date().iso(),
 
@@ -52,7 +52,3 @@ export const categorySchema = Joi.object<Category>({
 
   deleted: Joi.boolean().required(),
 });
-
-export function canAddChild(category: Category): boolean {
-  return category.depth < 5 && category.children.length < 20;
-}

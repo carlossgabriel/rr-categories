@@ -1,8 +1,11 @@
-import { canAddChild, Category, categorySchema } from '@models/category';
-import { ObjectId } from 'mongodb';
-
-import config from '@utils/config';
 import mongodb from '@libs/mongodb';
+import { Category } from '@models/category';
+import config from '@utils/config';
+import crypto from 'crypto';
+import { InsertOneResult } from 'mongodb';
+import { UUIDTypes, v4 as uuid } from 'uuid';
+
+const collectionName = config.COLLECTION_NAME;
 
 export async function createCategory(
   category: Omit<
@@ -10,72 +13,118 @@ export async function createCategory(
     'id' | 'createdAt' | 'updatedAt' | 'pathCategory' | 'depth'
   >,
   isRoot: boolean,
-  pathCategory?: string,
 ): Promise<Category> {
-  const collectionName = config.COLLECTION_NAME;
-  if (!mongodb.collectionExists(config.COLLECTION_NAME)) {
-    console.log(`Creating collection "${config.COLLECTION_NAME}"`);
-    await mongodb.createCollection(config.COLLECTION_NAME);
-  }
-
   const timestamp = new Date();
-  const newCategoryId = new ObjectId().toHexString();
+  const newCategoryId = uuid();
   const newCategory: Category = {
     ...category,
     id: newCategoryId,
     createdAt: timestamp,
     updatedAt: timestamp,
-    pathCategory: isRoot ? newCategoryId : `${pathCategory}:${newCategoryId}`,
-    depth: isRoot ? 0 : pathCategory ? pathCategory.split(':').length : 0,
+    pathCategory: isRoot
+      ? newCategoryId
+      : `${category.parentId}:${newCategoryId}`,
+    depth: isRoot
+      ? 0
+      : category.parentId
+      ? category.parentId.toString().split(':').length
+      : 0,
     children: [],
     deletedAt: null,
     deleted: false,
   };
 
-  console.log('Validating category creation');
-  const validationResult = categorySchema.validate(newCategory);
-  if (validationResult.error) {
-    throw new Error(`Validation error: ${validationResult.error.message}`);
-  }
-
   try {
-    console.log('Inserting new category', newCategory);
-    const result = await mongodb.insertOne<Category>({
-      collectionName: config.COLLECTION_NAME,
-      document: newCategory,
-    });
+    if (isRoot) {
+      const { categoryInserted } = await insertCategory(newCategory);
+      return categoryInserted;
+    } else if (category.parentId) {
+      console.log('parentID', category.parentId);
+      const parentCategory = await getParentCategory(category.parentId);
+      validateMaxDepthChild(parentCategory.depth);
+      validateMaxChildren(parentCategory.children);
+      await validateUniqueChildName(category.name, category.parentId);
+      await updateParentCategory(parentCategory.id, newCategory.id);
 
-    console.log('Insert result', result);
-    if (!result.acknowledged)
-      throw new Error('Failed to insert category document');
+      newCategory.pathCategory = `${parentCategory.pathCategory}:${newCategoryId}`;
+      newCategory.depth = parentCategory.depth + 1;
 
-    // If not a root category, update the parent
-    if (!isRoot && category.parentId) {
-      console.log('Updating parent category');
-      const parentCategory = await mongodb.find<Category>({
-        collectionName,
-        filter: { id: category.parentId },
-      });
-
-      if (!parentCategory) throw new Error('Parent category not found');
-      if (!canAddChild(parentCategory))
-        throw new Error('Cannot add more children to this category');
-
-      console.log('Updating parent category', parentCategory);
-      await mongodb.updateOne<Category>({
-        collectionName: config.COLLECTION_NAME,
-        filter: { id: category.parentId },
-        update: { $push: { children: newCategory.id } },
-      });
+      const { categoryInserted } = await insertCategory(newCategory);
+      return categoryInserted;
     }
 
-    console.log('Returning new category', newCategory);
-    return newCategory;
+    throw new Error('Parent ID must be provided for non-root categories');
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(`Error creating category: ${error.message}`);
     } else {
       throw new Error(`An unknown error occurred`);
     }
+  }
+}
+
+async function insertCategory(newCategory: Category): Promise<{
+  mongoResult: InsertOneResult<Category>;
+  categoryInserted: Category;
+}> {
+  console.log('Inserting new category', newCategory);
+  const result = await mongodb.insertOne<Category>({
+    collectionName,
+    document: newCategory,
+  });
+
+  if (!result.acknowledged) {
+    throw new Error('Failed to insert category document');
+  }
+  return { mongoResult: result, categoryInserted: newCategory };
+}
+
+async function getParentCategory(parentId: UUIDTypes): Promise<Category> {
+  const parentCategory = await mongodb.find<Category>({
+    collectionName,
+    filter: { id: parentId },
+  });
+  if (!parentCategory) {
+    throw new Error('Parent category not found');
+  }
+  return parentCategory;
+}
+
+async function updateParentCategory(
+  parentId: UUIDTypes,
+  childId: UUIDTypes,
+): Promise<void> {
+  console.log('Updating parent category', parentId);
+  await mongodb.updateOne<Category>({
+    collectionName,
+    filter: { id: parentId },
+    update: { $push: { children: childId } },
+  });
+}
+
+function validateMaxDepthChild(depth: Category['depth']) {
+  if (depth === 5) {
+    throw new Error(`Category reached the depth limit of sub categories`);
+  }
+}
+
+function validateMaxChildren(children: Category['children']) {
+  if (children.length === 20) {
+    throw new Error(`Parent category reached the limit of categories`);
+  }
+}
+
+async function validateUniqueChildName(
+  childName: string,
+  parentId: UUIDTypes,
+): Promise<void> {
+  const existingChild = await mongodb.find<Category>({
+    collectionName,
+    filter: { name: childName, parentId },
+  });
+  if (existingChild) {
+    throw new Error(
+      'A category cannot have more than one subcategory with the same name',
+    );
   }
 }

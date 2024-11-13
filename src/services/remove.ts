@@ -1,8 +1,9 @@
+import mongodb from '@libs/mongodb';
 import { Category } from '@models/category';
 import config from '@utils/config';
-import mongodb from '@libs/mongodb';
+import { UUIDTypes } from 'uuid';
 
-export async function removeCategory(categoryId: string): Promise<void> {
+export async function removeCategory(categoryId: UUIDTypes): Promise<boolean> {
   const collectionName = config.COLLECTION_NAME;
 
   try {
@@ -13,7 +14,7 @@ export async function removeCategory(categoryId: string): Promise<void> {
       filter: { id: categoryId },
     });
     if (!categoryToDelete) {
-      throw new Error('Category not found');
+      return false;
     }
     console.log('Category found:', categoryToDelete);
 
@@ -40,9 +41,10 @@ export async function removeCategory(categoryId: string): Promise<void> {
         update: { $pull: { children: categoryId } },
       });
     }
+    return true;
   } catch (error) {
     if (error instanceof Error) {
-      throw new Error(`Error creating category: ${error.message}`);
+      throw new Error(`Error removing category: ${error.message}`);
     } else {
       throw new Error(`An unknown error occurred`);
     }

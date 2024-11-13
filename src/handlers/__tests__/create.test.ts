@@ -1,8 +1,9 @@
+import { create } from '@handlers/create';
+import formatJSONResponse from '@libs/apiGateway';
 import { createCategory } from '@services/create';
 import { validateCategoryCreationInput } from '@utils/validations/validateCreateInput';
-import formatJSONResponse from '@libs/apiGateway';
 import { APIGatewayProxyEvent, Context } from 'aws-lambda';
-import { create } from '@handlers/create';
+import { v4 as uuid } from 'uuid';
 
 jest.mock('@services/create');
 jest.mock('@utils/validations/validateCreateInput');
@@ -16,6 +17,7 @@ const mockFormatJSONResponse = formatJSONResponse as jest.Mock;
 describe('createCategory Lambda Function', () => {
   let event: APIGatewayProxyEvent;
   let context: Context;
+  const createdUUID = uuid();
 
   beforeEach(() => {
     jest.spyOn(console, 'error').mockImplementation();
@@ -27,7 +29,7 @@ describe('createCategory Lambda Function', () => {
         name: 'Test Category',
         description: 'Test Description',
       }),
-    } as any as APIGatewayProxyEvent;
+    } as unknown as APIGatewayProxyEvent;
 
     context = {} as Context;
 
@@ -36,19 +38,23 @@ describe('createCategory Lambda Function', () => {
 
   it('should create a category successfully', async () => {
     mockValidateInput.mockReturnValue({
-      category: { name: 'Test Category', description: 'Test Description' },
+      category: {
+        name: 'Test Category',
+        description: 'Test Description',
+      },
       isRoot: true,
     });
     mockCreateCategory.mockResolvedValue({
-      id: '123',
+      id: createdUUID,
       name: 'Test Category',
       description: 'Test Description',
+      isRoot: true,
     });
     mockFormatJSONResponse.mockReturnValue({
       statusCode: 201,
       body: JSON.stringify({
         newCategory: {
-          id: '123',
+          id: createdUUID,
           name: 'Test Category',
           description: 'Test Description',
         },
@@ -61,21 +67,25 @@ describe('createCategory Lambda Function', () => {
       JSON.parse(event.body || '{}'),
     );
     expect(mockCreateCategory).toHaveBeenCalledWith(
-      { name: 'Test Category', description: 'Test Description' },
+      {
+        name: 'Test Category',
+        description: 'Test Description',
+      },
       true,
     );
     expect(mockFormatJSONResponse).toHaveBeenCalledWith(201, {
       newCategory: {
-        id: '123',
+        id: createdUUID,
         name: 'Test Category',
         description: 'Test Description',
+        isRoot: true,
       },
     });
     expect(result).toEqual({
       statusCode: 201,
       body: JSON.stringify({
         newCategory: {
-          id: '123',
+          id: createdUUID,
           name: 'Test Category',
           description: 'Test Description',
         },
