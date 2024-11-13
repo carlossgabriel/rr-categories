@@ -30,6 +30,7 @@ aws configure set default.region us-east-1
 ```
 
 Agora será possível obter o ID da api pelo API Gateway configurado, utilizando o comando:
+
 ```sh
 aws apigateway get-rest-apis --endpoint-url=http://localhost:4566
 ```
