@@ -8,7 +8,6 @@ export async function removeCategory(categoryId: UUIDTypes): Promise<boolean> {
 
   try {
     console.log(`Deleting category ${categoryId}`);
-    // Find the category to be deleted
     const categoryToDelete = await mongodb.find<Category>({
       collectionName,
       filter: { id: categoryId },
@@ -18,7 +17,6 @@ export async function removeCategory(categoryId: UUIDTypes): Promise<boolean> {
     }
     console.log('Category found:', categoryToDelete);
 
-    // Delete the category and all its subcategories by matching the pathCategory prefix
     const pathPattern = new RegExp(`^${categoryToDelete.pathCategory}`);
     console.log(
       'Deleting all categories matching the pathCategory prefix:',
@@ -29,7 +27,6 @@ export async function removeCategory(categoryId: UUIDTypes): Promise<boolean> {
       filter: { pathCategory: pathPattern },
     });
 
-    // Remove the deleted category from its parent’s children array if it’s not a root category
     if (categoryToDelete.parentId) {
       console.log(
         'Updating parent category by removing the deleted category from its children array',

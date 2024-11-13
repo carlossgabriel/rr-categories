@@ -3,7 +3,6 @@ const { pathsToModuleNameMapper } = require('ts-jest');
 const { compilerOptions } = require('./tsconfig');
 
 process.env.COLLECTION_NAME = 'categories';
-process.env.JWT_SECRET = 'SECRET_categories123';
 process.env.NODE_ENV = 'development';
 
 /** @type {import('ts-jest').JestConfigWithTsJest} */

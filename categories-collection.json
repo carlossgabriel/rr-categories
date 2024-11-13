@@ -1,0 +1,193 @@
+{
+	"info": {
+		"_postman_id": "241e8d10-c444-4552-85ae-32f6388826b9",
+		"name": "rr-category",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "9650031"
+	},
+	"item": [
+		{
+			"name": "LIST categories",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"enabled\": true,\n  \"depth\": 2,\n  \"parentId\": \"da0bd45f-e775-4ae2-8da1-331ce1a83e48\",\n  \"deleted\": false,\n  \"name\": \"example\"\n}"
+				},
+				"url": {
+					"raw": "http://{{devBaseUrl}}/restapis/{{apiId}}/local/_user_request_/categories",
+					"protocol": "http",
+					"host": [
+						"{{devBaseUrl}}"
+					],
+					"path": [
+						"restapis",
+						"{{apiId}}",
+						"local",
+						"_user_request_",
+						"categories"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CREATE category",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Iphone_16 CASE SCREEN COLOR\",\n  \"parentId\": \"d272f9d4-b6ed-48dc-bc0b-8647fd2809c1\",\n  \"isRoot\": false,\n  \"description\": \"Iphone 16 CASE COLOR\"\n}"
+				},
+				"url": {
+					"raw": "http://{{devBaseUrl}}/restapis/{{apiId}}/local/_user_request_/categories",
+					"protocol": "http",
+					"host": [
+						"{{devBaseUrl}}"
+					],
+					"path": [
+						"restapis",
+						"{{apiId}}",
+						"local",
+						"_user_request_",
+						"categories"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET category",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "http://{{devBaseUrl}}/restapis/{{apiId}}/local/_user_request_/categories/{{id}}",
+					"protocol": "http",
+					"host": [
+						"{{devBaseUrl}}"
+					],
+					"path": [
+						"restapis",
+						"{{apiId}}",
+						"local",
+						"_user_request_",
+						"categories",
+						"{{id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UPDATE category",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Updated Category Name\",\n  \"description\": \"Updated description\"\n}"
+				},
+				"url": {
+					"raw": "http://{{devBaseUrl}}/restapis/{{apiId}}/local/_user_request_/categories/{{id}}",
+					"protocol": "http",
+					"host": [
+						"{{devBaseUrl}}"
+					],
+					"path": [
+						"restapis",
+						"{{apiId}}",
+						"local",
+						"_user_request_",
+						"categories",
+						"{{id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE category",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "http://{{devBaseUrl}}/restapis/{{apiId}}/local/_user_request_/categories/{{id}}",
+					"protocol": "http",
+					"host": [
+						"{{devBaseUrl}}"
+					],
+					"path": [
+						"restapis",
+						"{{apiId}}",
+						"local",
+						"_user_request_",
+						"categories",
+						"{{id}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "devBaseUrl",
+			"value": "localhost:4566"
+		},
+		{
+			"key": "apiId",
+			"value": "odfd5n7w3y"
+		}
+	]
+}
